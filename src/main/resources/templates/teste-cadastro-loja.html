@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Cadastro Loja</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .info {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1>Teste Cadastro Loja</h1>
+
+<div class="info">
+    <h3>Status do Login:</h3>
+    <div id="login-status">Verificando...</div>
+    <div>Token no localStorage: <span id="token-status">Verificando...</span></div>
+</div>
+
+<div class="info">
+    <h3>Ações:</h3>
+    <button onclick="checkAuth()">Verificar Autenticação</button>
+    <button onclick="goToCadastroLoja()">Ir para Cadastro Loja</button>
+    <button onclick="clearToken()">Limpar Token</button>
+</div>
+
+<div id="result" class="info"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('jwtToken');
+        document.getElementById('token-status').textContent = token ? '✅ Presente' : '❌ Ausente';
+
+        if (!token) {
+            document.getElementById('login-status').innerHTML =
+                '<div class="error">❌ Você não está logado. Faça login primeiro.</div>';
+        } else {
+            document.getElementById('login-status').innerHTML =
+                '<div class="success">✅ Token encontrado. Verificando autenticação...</div>';
+            checkAuth();
+        }
+    });
+
+    function checkAuth() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<div class="warning">🔍 Verificando autenticação...</div>';
+
+        fetch('/api/debug/auth')
+            .then(response => response.json())
+            .then(data => {
+                let html = '<h3>Resultado da Autenticação:</h3>';
+                html += '<ul>';
+                html += `<li>Autenticado: ${data.authenticated ? '✅ SIM' : '❌ NÃO'}</li>`;
+                html += `<li>Principal: ${data.principal || 'N/A'}</li>`;
+                html += `<li>Nome: ${data.name || 'N/A'}</li>`;
+                html += `<li>Username: ${data.username || 'N/A'}</li>`;
+                if (data.authorities) {
+                    html += `<li>Authorities: ${JSON.stringify(data.authorities)}</li>`;
+                }
+                html += '</ul>';
+
+                if (data.authenticated) {
+                    resultDiv.className = 'info success';
+                    resultDiv.innerHTML = html;
+                    document.getElementById('login-status').innerHTML =
+                        '<div class="success">✅ Autenticação OK! Você está logado.</div>';
+                } else {
+                    resultDiv.className = 'info error';
+                    resultDiv.innerHTML = html;
+                    document.getElementById('login-status').innerHTML =
+                        '<div class="error">❌ Autenticação falhou.</div>';
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'info error';
+                resultDiv.innerHTML = '❌ Erro ao verificar autenticação: ' + error.message;
+            });
+    }
+
+    function goToCadastroLoja() {
+        window.location.href = '/cadastro-loja';
+    }
+
+    function clearToken() {
+        localStorage.removeItem('jwtToken');
+        document.getElementById('token-status').textContent = '❌ Ausente';
+        document.getElementById('login-status').innerHTML =
+            '<div class="warning">⚠️ Token removido. Recarregue a página.</div>';
+    }
+</script>
+</body>
+</html>

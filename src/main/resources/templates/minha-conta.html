@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta | Na Loja Tem</title>
+    <!-- CSS Globais -->
+    <link rel="stylesheet" th:href="@{/estilos/style.css}">
+    <!-- CSS Específico da Minha Conta -->
+    <link rel="stylesheet" th:href="@{/estilos/minha-conta.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<header th:replace="cabecalho :: header"></header>
+
+<main class="minha-conta-container">
+    <div class="container">
+        <div class="minha-conta-content">
+            <!-- Sidebar -->
+            <aside class="account-sidebar">
+                <div class="user-profile">
+                    <img th:src="${usuario.foto != null ? usuario.foto : '/imagens/default-avatar.png'}"
+                         class="user-avatar" alt="Avatar">
+                    <div class="user-name" th:text="${usuario.nome}">Usuário</div>
+                    <div class="user-email" th:text="${usuario.email}">email@exemplo.com</div>
+                </div>
+
+                <nav class="account-nav">
+                    <ul>
+                        <li><a href="#dados-pessoais" class="active"><i class="fas fa-user"></i> Dados Pessoais</a></li>
+                        <li><a href="#enderecos"><i class="fas fa-map-marker-alt"></i> Endereços</a></li>
+                        <li><a href="#pedidos"><i class="fas fa-shopping-bag"></i> Meus Pedidos</a></li>
+                        <li><a href="#favoritos"><i class="fas fa-heart"></i> Favoritos</a></li>
+                        <li th:if="${usuario.tipo == 'VENDEDOR'}">
+                            <a th:href="@{/minha-loja}"><i class="fas fa-store"></i> Minha Loja</a>
+                        </li>
+                        <li><a href="#seguranca"><i class="fas fa-shield-alt"></i> Segurança</a></li>
+                        <li><a href="#configuracoes"><i class="fas fa-cog"></i> Configurações</a></li>
+                        <li><a href="#" id="logout-account"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Conteúdo principal -->
+            <div class="account-content">
+                <div class="account-section active" id="dados-pessoais-section">
+                    <h2><i class="fas fa-user"></i> Dados Pessoais</h2>
+
+                    <div class="account-info">
+                        <div class="info-item">
+                            <label>Nome:</label>
+                            <span th:text="${usuario.nome}">Nome do usuário</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span th:text="${usuario.email}">email@exemplo.com</span>
+                        </div>
+                        <div class="info-item">
+                            <label>CPF:</label>
+                            <span th:text="${usuario.cpf}">000.000.000-00</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Telefone:</label>
+                            <span th:text="${usuario.telefone != null ? usuario.telefone : 'Não informado'}">(11) 99999-9999</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Data de Cadastro:</label>
+                            <span th:text="${#dates.format(usuario.dataCriacao, 'dd/MM/yyyy')}">01/01/2024</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-editar-dados">
+                        <i class="fas fa-edit"></i> Editar Dados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="rodape :: footer"></footer>
+
+<!-- Scripts Globais -->
+<script th:src="@{/scripts/global.js}"></script>
+<!-- Scripts Específicos da Minha Conta -->
+<script th:src="@{/scripts/minha-conta.js}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Logout
+        const logoutLink = document.getElementById('logout-account');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                fazerLogout();
+            });
+        }
+
+        // Navegação entre seções
+        const navLinks = document.querySelectorAll('.account-nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!this.getAttribute('href').startsWith('#')) return;
+
+                e.preventDefault();
+
+                // Atualizar link ativo
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId + '-section');
+                const allSections = document.querySelectorAll('.account-section');
+
+                // Esconder todas as seções
+                allSections.forEach(section => section.classList.remove('active'));
+
+                // Mostrar seção alvo
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
